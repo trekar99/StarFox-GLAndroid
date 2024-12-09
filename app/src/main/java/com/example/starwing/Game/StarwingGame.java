@@ -12,13 +12,12 @@ import android.opengl.GLES10;
 import android.opengl.GLSurfaceView;
 import android.opengl.GLU;
 
-import com.example.starwing.OpenGLView;
 import com.example.starwing.R;
 import com.example.starwing.Utils.Camera;
 import com.example.starwing.Utils.GLTexture;
 import com.example.starwing.Utils.GraphicUtils;
 import com.example.starwing.Utils.Logger;
-import com.example.starwing.World.Background;
+import com.example.starwing.Utils.Object3D;
 import com.example.starwing.World.Screen;
 import com.example.starwing.World.Square;
 
@@ -37,6 +36,7 @@ public class StarwingGame {
     //private Background background;
     private Screen screen;
     private Square square;
+    Object3D starship;
 
     // Textures
     private GLTexture bgTexture;
@@ -53,8 +53,10 @@ public class StarwingGame {
         square = new Square();
         square.loadTexture(gl, context);
 
-        IntroScreen = new GLTexture(context,R.raw.mountains);
+        IntroScreen = new GLTexture(context,R.raw.space);
         screen = new Screen();
+
+        this.starship = new Object3D(context, R.raw.star);
 
         loaded = true;
         Logger.v(this, "Game Initialized Successfully");
@@ -151,37 +153,36 @@ public class StarwingGame {
 //        float width = Resources.getSystem().getDisplayMetrics().widthPixels;
 //        float height = Resources.getSystem().getDisplayMetrics().heightPixels;
 
-        GLES10.glMatrixMode(GLES10.GL_MODELVIEW);
+        // Draw Background
         GLES10.glLoadIdentity();
         GLES10.glTranslatef(0, 0.5f, 0);
         GLES10.glScalef(3, 2, 1);
 
-
-
         GLES10.glMatrixMode(GLES10.GL_PROJECTION);
         GLES10.glLoadIdentity();
 
-
-        //GLU.gluPerspective(gl, 60.0f, (float) width / (float) height, 0.1f, 1000.0f);
-
-
         square.draw(0);
-
 
         // Draw our square.
         GLES10.glPushMatrix();
-        GLES10.glMatrixMode(GL10.GL_PROJECTION);
+        GLES10.glMatrixMode(GLES10.GL_PROJECTION);
         // Reset the projection matrix
         GLES10.glLoadIdentity();
         // Calculate the aspect ratio of the window
-        //GLES10.glFrustumf(-1.0f, 1.0f, -1.0f, 1.0f, 1.0f, 100.0f);
         GLU.gluPerspective(gl, 60.0f, (float) width / (float) height, 0.1f, 1000.0f);
+
         GLES10.glMatrixMode(GLES10.GL_MODELVIEW);
         GLES10.glLoadIdentity();
         GLES10.glTranslatef(0, 0, -6);
 
-        square.draw();
+        //square.draw();
         GLES10.glPopMatrix();
+
+        gl.glPushMatrix();// Reset model-view matrix ( NEW )
+        gl.glRotatef(0, 0, 1, 0);
+        gl.glTranslatef(0, -2, 0);
+        starship.draw(gl);                   // Draw triangle ( NEW )
+        gl.glPopMatrix();
 
     }
 }
