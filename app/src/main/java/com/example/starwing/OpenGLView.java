@@ -10,55 +10,65 @@ import javax.microedition.khronos.egl.EGLConfig;
 import javax.microedition.khronos.opengles.GL10;
 
 import android.content.Context;
+import android.opengl.GLSurfaceView;
 import android.opengl.GLSurfaceView.Renderer;
 import android.opengl.GLU;
+import android.view.MotionEvent;
 
-import com.example.starwing.World.Plane;
+import com.example.starwing.Game.StarwingGame;
+import com.example.starwing.Utils.Logger;
 
-public class OpenGLView implements Renderer {
+public class OpenGLView extends GLSurfaceView implements Renderer {
 
-	private Plane plane;
-	private int angle = 0;
+	StarwingGame Game;
+	Context context;
 
-	private Context context;
+	private int frameCount = 0;
 
 	public OpenGLView(Context context){
+		super(context);
+		Logger.v(this, "View's constructor called");
+
+		setRenderer(this);
+		Game = new StarwingGame();
 		this.context = context;
+
+		Logger.v(this, "All set for View");
 	}
 
-	public void onSurfaceCreated(GL10 gl, EGLConfig config) {
-		// Image Background color
-		gl.glClearColor(1.0f, 1.0f, 1.0f, 0.5f);
+	public void onPause(){
+		Logger.v(this, "View Paused");
+		Game.pauseGame();
+	}
 
-		//Create the objects
-		plane = new Plane();
+	public void onResume(){
+		Logger.v(this, "View Resumed");
+		Game.resumeGame();
+	}
+
+	public boolean onTouchEvent(final MotionEvent event){
+		Logger.v(this, "Touch Event detected at (x , y) : " + event.getX() + event.getY());
+
+		if(event.getAction() == MotionEvent.ACTION_DOWN)
+		{
+			Logger.v(this, "Passing the touchevent to the renderer object");
+			Game.addTouchEvent(event.getX(),event.getY());
+		}
+
+		return true;
+	}
+
+	public void onSurfaceCreated(GL10 gl, EGLConfig config){
+		Logger.Debug(this, "Surface Created, Do perspective");
+		Game.loadGame(gl, this.context);
 	}
 
 	@Override
-	public void onDrawFrame(GL10 gl) {
-		
-		// Clears the screen and depth buffer.
-		gl.glClear(GL10.GL_COLOR_BUFFER_BIT);
-		
-		gl.glLoadIdentity();	
+	public void onSurfaceChanged(GL10 gl, int width, int height){
+		Logger.Debug(this, "Surface changed, Update the game screen");
+		Game.updateScreenSize(width, height);
 
-		gl.glTranslatef(0.0f, 0.0f, -10.0f);
 
-		// Red Square
-		gl.glPushMatrix();
-		gl.glRotatef(angle, 0.0f, 1.0f, 0.0f);
-		gl.glRotatef(angle, 0.0f, 0.0f, 1.0f);
-		gl.glTranslatef(-2.0f, 0.0f, 0.0f);
-		gl.glColor4f(1,0,0,0);
-		plane.draw(gl);
-		gl.glPopMatrix();
-
-		angle += 5.0f;
-	}
-
-	@Override
-	public void onSurfaceChanged(GL10 gl, int width, int height) {
-		// Define the Viewport
 		gl.glViewport(0, 0, width, height);
 		// Select the projection matrix
 		gl.glMatrixMode(GL10.GL_PROJECTION);
@@ -66,9 +76,22 @@ public class OpenGLView implements Renderer {
 		gl.glLoadIdentity();
 		// Calculate the aspect ratio of the window
 		GLU.gluPerspective(gl, 60.0f, (float) width / (float) height, 0.1f, 1000.0f);
-		
+		//gl.glOrthof(8,10,-4,4,-1,1);
 		// Select the modelview matrix
-		gl.glMatrixMode(GL10.GL_MODELVIEW);	
+		gl.glMatrixMode(GL10.GL_MODELVIEW);
 	}
+
+	@Override
+	public void onDrawFrame(GL10 gl){
+		if(frameCount == 1)
+		{
+			Logger.v(this, "Drawing the first frame for the game");
+			Game.initialiseGame(gl, this.context);
+		}
+		else if(frameCount > 1) Game.runGame(gl);
+
+		frameCount++;
+	}
+
 
 }
