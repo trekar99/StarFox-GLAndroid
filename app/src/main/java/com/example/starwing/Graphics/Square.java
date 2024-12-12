@@ -1,4 +1,4 @@
-package com.example.starwing.World;
+package com.example.starwing.Graphics;
 
 import android.content.Context;
 import android.graphics.Bitmap;

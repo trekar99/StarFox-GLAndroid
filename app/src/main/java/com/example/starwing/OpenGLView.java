@@ -10,6 +10,7 @@ import javax.microedition.khronos.egl.EGLConfig;
 import javax.microedition.khronos.opengles.GL10;
 
 import android.content.Context;
+import android.content.res.Resources;
 import android.opengl.GLSurfaceView;
 import android.opengl.GLSurfaceView.Renderer;
 import android.opengl.GLU;
@@ -24,6 +25,10 @@ public class OpenGLView extends GLSurfaceView implements Renderer {
 	Context context;
 
 	private int frameCount = 0;
+
+	float previousX, previousY;
+	float width = Resources.getSystem().getDisplayMetrics().widthPixels;
+    float height = Resources.getSystem().getDisplayMetrics().heightPixels;
 
 	public OpenGLView(Context context){
 		super(context);
@@ -53,6 +58,12 @@ public class OpenGLView extends GLSurfaceView implements Renderer {
 		{
 			Logger.v(this, "Passing the touchevent to the renderer object");
 			Game.addTouchEvent(event.getX(),event.getY());
+			switch (event.getAction()) {
+				case MotionEvent.ACTION_DOWN:
+
+
+			}
+			return true;
 		}
 
 		return true;
@@ -81,12 +92,14 @@ public class OpenGLView extends GLSurfaceView implements Renderer {
 		gl.glMatrixMode(GL10.GL_MODELVIEW);
 	}
 
+	public int getFrameCount() { return frameCount; }
+
 	@Override
 	public void onDrawFrame(GL10 gl){
 		if(frameCount == 1)
 		{
 			Logger.v(this, "Drawing the first frame for the game");
-			Game.initialiseGame(gl, this.context);
+			Game.initialiseGame(gl, this);
 		}
 		else if(frameCount > 1) Game.runGame(gl);
 

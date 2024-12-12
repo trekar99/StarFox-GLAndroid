@@ -1,17 +1,6 @@
-package com.example.starwing.World;
+package com.example.starwing.Graphics;
 
-import android.content.Context;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
-import android.opengl.GLUtils;
-
-import com.example.starwing.R;
 import com.example.starwing.Utils.Mesh;
-
-import java.io.IOException;
-import java.io.InputStream;
-
-import javax.microedition.khronos.opengles.GL10;
 
 public class Screen extends Mesh {
     /**

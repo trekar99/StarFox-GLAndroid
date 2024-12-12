@@ -14,6 +14,7 @@ import java.util.ArrayList;
 import javax.microedition.khronos.opengles.GL10;
 
 import android.content.Context;
+import android.opengl.GLES10;
 
 public class Object3D {
 
@@ -145,38 +146,38 @@ public class Object3D {
         }
     }
 
-    public void draw(GL10 gl) {
+    public void draw() {
         // Enabled the vertices buffer for writing and to be used during
         // rendering.
-        gl.glColor4f(1,1,1,1);
-        gl.glEnableClientState(GL10.GL_VERTEX_ARRAY);
-        if(textureEnabled) gl.glEnableClientState(GL10.GL_TEXTURE_COORD_ARRAY);
+        GLES10.glColor4f(1,1,1,1);
+        GLES10.glEnableClientState(GLES10.GL_VERTEX_ARRAY);
+        if(textureEnabled) GLES10.glEnableClientState(GLES10.GL_TEXTURE_COORD_ARRAY);
 
         //////////////////////// NEW ////////////////////////////////
-        gl.glEnableClientState(GL10.GL_NORMAL_ARRAY);
+        GLES10.glEnableClientState(GLES10.GL_NORMAL_ARRAY);
         //////////////////////// NEW ////////////////////////////////
 
         // Specifies the location and data format of an array of vertex
         // coordinates to use when rendering.
-        gl.glVertexPointer(3, GL10.GL_FLOAT, 0, vertexBuffer);
+        GLES10.glVertexPointer(3, GLES10.GL_FLOAT, 0, vertexBuffer);
 
         //////////////////////// NEW ////////////////////////////////
-        gl.glNormalPointer(GL10.GL_FLOAT, 0, normalBuffer);
+        GLES10.glNormalPointer(GLES10.GL_FLOAT, 0, normalBuffer);
         //////////////////////// NEW ////////////////////////////////
 
         if(textureEnabled) {
-            gl.glTexCoordPointer(2, GL10.GL_FLOAT,0,texcoordBuffer);
-            gl.glBindTexture(GL10.GL_TEXTURE_2D, textures[0]);
+            GLES10.glTexCoordPointer(2, GLES10.GL_FLOAT,0,texcoordBuffer);
+            GLES10.glBindTexture(GLES10.GL_TEXTURE_2D, textures[0]);
         }
 
-        gl.glDrawElements(GL10.GL_TRIANGLES, numFaceIndexs, GL10.GL_UNSIGNED_SHORT, indexBuffer);
+        GLES10.glDrawElements(GLES10.GL_TRIANGLES, numFaceIndexs, GLES10.GL_UNSIGNED_SHORT, indexBuffer);
 
         // Disable the vertices buffer.
-        gl.glDisableClientState(GL10.GL_VERTEX_ARRAY);
-        if(textureEnabled) gl.glDisableClientState(GL10.GL_TEXTURE_COORD_ARRAY);
+        GLES10.glDisableClientState(GLES10.GL_VERTEX_ARRAY);
+        if(textureEnabled) GLES10.glDisableClientState(GLES10.GL_TEXTURE_COORD_ARRAY);
 
         //////////////////////// NEW ////////////////////////////////
-        gl.glDisableClientState(GL10.GL_NORMAL_ARRAY);
+        GLES10.glDisableClientState(GLES10.GL_NORMAL_ARRAY);
         //////////////////////// NEW ////////////////////////////////
     }
 }

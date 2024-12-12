@@ -7,19 +7,18 @@
 package com.example.starwing.Game;
 
 import android.content.Context;
-import android.content.res.Resources;
 import android.opengl.GLES10;
-import android.opengl.GLSurfaceView;
-import android.opengl.GLU;
 
+import com.example.starwing.Graphics.PointLine;
+import com.example.starwing.OpenGLView;
 import com.example.starwing.R;
 import com.example.starwing.Utils.Camera;
 import com.example.starwing.Utils.GLTexture;
 import com.example.starwing.Utils.GraphicUtils;
 import com.example.starwing.Utils.Logger;
 import com.example.starwing.Utils.Object3D;
-import com.example.starwing.World.Screen;
-import com.example.starwing.World.Square;
+import com.example.starwing.Graphics.Screen;
+import com.example.starwing.Graphics.Square;
 
 import java.nio.FloatBuffer;
 
@@ -27,36 +26,62 @@ import javax.microedition.khronos.opengles.GL10;
 
 public class StarwingGame {
     // Main propierties
+    OpenGLView view;
     Context context;
     private Camera camera;
     private int width;
     private int height;
 
     // Background
-    //private Background background;
     private Screen screen;
     private Square square;
     Object3D starship;
+    private PointLine pointLine;
 
     // Textures
     private GLTexture bgTexture;
     private GLTexture IntroScreen;
 
+    // Controls
+    private float x, y = 0;
+
+    public float getX() {
+        return x;
+    }
+
+    public float getY() {
+        return y;
+    }
+
+    public void setX(float x) {
+        this.x = x;
+    }
+
+    public void setY(float y) {
+        this.y = y;
+    }
+
     // Auxiliar attributes
     private boolean loaded = false;
+    private int velocity = 0;
 
-    public void initialiseGame(GL10 gl, Context context){
+    public void initialiseGame(GL10 gl, OpenGLView view){
         Logger.v(this, "Initializing the Game");
+
+        // Main propierties
+        this.view = view;
+        this.context = view.getContext();
 
         // Init background
         //Create the objects
         square = new Square();
         square.loadTexture(gl, context);
 
-        IntroScreen = new GLTexture(context,R.raw.space);
+        IntroScreen = new GLTexture(context,R.raw.mountains);
         screen = new Screen();
 
         this.starship = new Object3D(context, R.raw.star);
+        pointLine = new PointLine();
 
         loaded = true;
         Logger.v(this, "Game Initialized Successfully");
@@ -77,21 +102,20 @@ public class StarwingGame {
     public void loadGame(GL10 gl, Context context){
         Logger.v(this, "Game is LOADING");
     //
-        float verts[] = {
+        float[] verts = {
                 -1.0f, 1.0f, 0.0f,
                 1.0f,  1.0f, 0.0f,
                 -1.0f, -1.0f,0.0f,
                 1.0f,  -1.0f, 0.0f
         };
 
-        float texture[] = {
+        float[] texture = {
                 0.0f, 1.0f,
                 1.0f, 1.0f,
                 0.0f, 0.0f,
                 1.0f, 0.0f
         };
 
-        this.context = context;
 
         FloatBuffer vertfb = GraphicUtils.ConvToFloatBuffer(verts);
         FloatBuffer texfb = GraphicUtils.ConvToFloatBuffer(texture);
@@ -137,52 +161,46 @@ public class StarwingGame {
 
     public void addTouchEvent(float x, float y){
         if(loaded) {
-            Logger.v(this, "ME TOCO");
+            float dx = (x / width - 0.5f);
+            float dy = - (y / height - 0.5f);
+
+            this.setX(this.getX()+((dx>0)?0.1f:-0.1f));
+            this.setY(this.getY()+((dy>0)?0.1f:-0.1f));
         }
     }
 
     private void renderGame(GL10 gl){
+        // LEVEL 1
         // Clears the screen and depth buffer.
         GLES10.glClear(GLES10.GL_COLOR_BUFFER_BIT | GLES10.GL_DEPTH_BUFFER_BIT);
-        // Replace the current matrix with the identity matrix
+        // Replace the model matrix with the identity matrix
         GLES10.glLoadIdentity();
         // Translates 6 units into the screen.
         GLES10.glTranslatef(0, 0, -6);
 
-        // Draw our square.
-//        float width = Resources.getSystem().getDisplayMetrics().widthPixels;
-//        float height = Resources.getSystem().getDisplayMetrics().heightPixels;
-
         // Draw Background
-        GLES10.glLoadIdentity();
-        GLES10.glTranslatef(0, 0.5f, 0);
-        GLES10.glScalef(3, 2, 1);
-
-        GLES10.glMatrixMode(GLES10.GL_PROJECTION);
-        GLES10.glLoadIdentity();
-
-        square.draw(0);
-
-        // Draw our square.
         GLES10.glPushMatrix();
-        GLES10.glMatrixMode(GLES10.GL_PROJECTION);
-        // Reset the projection matrix
-        GLES10.glLoadIdentity();
-        // Calculate the aspect ratio of the window
-        GLU.gluPerspective(gl, 60.0f, (float) width / (float) height, 0.1f, 1000.0f);
-
-        GLES10.glMatrixMode(GLES10.GL_MODELVIEW);
-        GLES10.glLoadIdentity();
-        GLES10.glTranslatef(0, 0, -6);
-
-        //square.draw();
+        GLES10.glTranslatef(0, 5f, 0);
+        GLES10.glScalef(10, 12, 1);
+        square.draw(0);
         GLES10.glPopMatrix();
 
-        gl.glPushMatrix();// Reset model-view matrix ( NEW )
-        gl.glRotatef(0, 0, 1, 0);
-        gl.glTranslatef(0, -2, 0);
-        starship.draw(gl);                   // Draw triangle ( NEW )
-        gl.glPopMatrix();
+        // Draw the starship.
+        GLES10.glPushMatrix();
+        GLES10.glTranslatef(x, y-2, 0);
+        starship.draw();
+        GLES10.glPopMatrix();
+
+        // Draw points.
+        GLES10.glTranslatef(0, -0.2f, 0);
+
+        velocity = this.view.getFrameCount() % 10;
+        GLES10.glTranslatef(0, (float) -velocity /25, (float) velocity /10);
+
+        for (int i = 0; i < 12; i++) {
+            pointLine.draw((float)i);
+            GLES10.glTranslatef(0, -0.6f, 0);
+        }
 
     }
 }

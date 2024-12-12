@@ -50,8 +50,7 @@ public class GraphicUtils {
         return Result;
     }
 
-    public static FloatBuffer ConvToFloatBuffer(float buf[])
-    {
+    public static FloatBuffer ConvToFloatBuffer(float[] buf){
         FloatBuffer ReturnBuffer;
 
         ByteBuffer vbb = ByteBuffer.allocateDirect(buf.length * 4);
@@ -63,8 +62,7 @@ public class GraphicUtils {
         return ReturnBuffer;
     }
 
-    public static ByteBuffer ConvToByteBuffer(byte buf[])
-    {
+    public static ByteBuffer ConvToByteBuffer(byte[] buf){
         ByteBuffer ReturnBuffer = ByteBuffer.allocateDirect(buf.length);
 
         ReturnBuffer.order(ByteOrder.nativeOrder());
@@ -74,8 +72,7 @@ public class GraphicUtils {
         return ReturnBuffer;
     }
 
-    public static ShortBuffer ConvToShortBuffer(short buf[])
-    {
+    public static ShortBuffer ConvToShortBuffer(short[] buf) {
         ShortBuffer ReturnBuffer = ShortBuffer.allocate(buf.length);
         ReturnBuffer.put(buf);
         ReturnBuffer.position(0);
