@@ -14,7 +14,9 @@ import java.util.ArrayList;
 import javax.microedition.khronos.opengles.GL10;
 
 import android.content.Context;
+import android.graphics.Bitmap;
 import android.opengl.GLES10;
+import android.opengl.GLUtils;
 
 public class Object3D {
 
@@ -23,6 +25,12 @@ public class Object3D {
 
     // Texture enabled or not
     boolean textureEnabled = false;
+
+    // Indicates if we need to load the texture.
+    private boolean mShouldLoadTexture = false;
+
+    // The bitmap we want to load as a texture.
+    private Bitmap mBitmap;
 
     // Our vertex buffer.
     private FloatBuffer vertexBuffer;
@@ -37,6 +45,10 @@ public class Object3D {
     private FloatBuffer texcoordBuffer;
 
     int[] textures;
+
+    // Our texture id.
+    private int mTextureId = -1; // New variable.
+
     int numFaceIndexs = 0;
 
     public Object3D(Context ctx, int filenameId) {
@@ -146,12 +158,59 @@ public class Object3D {
         }
     }
 
+    /**
+     * Set the bitmap to load into a texture.
+     *
+     * @param bitmap
+     */
+    public void loadBitmap(Bitmap bitmap) {
+        this.mBitmap = bitmap;
+        mShouldLoadTexture = true;
+    }
+
+    /**
+     * Loads the texture.
+     *
+     */
+    private void loadGLTexture() {
+        // Generate one texture pointer...
+        int[] textures = new int[1];
+        GLES10.glGenTextures(1, textures, 0);
+        mTextureId = textures[0];
+
+        // ...and bind it to our array
+        GLES10.glBindTexture(GLES10.GL_TEXTURE_2D, mTextureId);
+
+        // Create Nearest Filtered Texture
+        GLES10.glTexParameterf(GLES10.GL_TEXTURE_2D, GLES10.GL_TEXTURE_MIN_FILTER,
+                GLES10.GL_LINEAR);
+        GLES10.glTexParameterf(GLES10.GL_TEXTURE_2D, GLES10.GL_TEXTURE_MAG_FILTER,
+                GLES10.GL_LINEAR);
+
+        // Different possible texture parameters, e.g. GL10.GL_CLAMP_TO_EDGE
+        GLES10.glTexParameterf(GLES10.GL_TEXTURE_2D, GLES10.GL_TEXTURE_WRAP_S,
+                GLES10.GL_CLAMP_TO_EDGE);
+        GLES10.glTexParameterf(GLES10.GL_TEXTURE_2D, GLES10.GL_TEXTURE_WRAP_T,
+                GLES10.GL_REPEAT);
+
+        // Use the Android GLUtils to specify a two-dimensional texture image
+        // from our bitmap
+        GLUtils.texImage2D(GLES10.GL_TEXTURE_2D, 0, mBitmap, 0);
+
+        textureEnabled = true;
+    }
+
     public void draw() {
         // Enabled the vertices buffer for writing and to be used during
         // rendering.
         GLES10.glColor4f(1,1,1,1);
         GLES10.glEnableClientState(GLES10.GL_VERTEX_ARRAY);
-        if(textureEnabled) GLES10.glEnableClientState(GLES10.GL_TEXTURE_COORD_ARRAY);
+
+        // Load textures
+        if (mShouldLoadTexture) {
+            loadGLTexture();
+            mShouldLoadTexture = false;
+        }
 
         //////////////////////// NEW ////////////////////////////////
         GLES10.glEnableClientState(GLES10.GL_NORMAL_ARRAY);
@@ -162,19 +221,27 @@ public class Object3D {
         GLES10.glVertexPointer(3, GLES10.GL_FLOAT, 0, vertexBuffer);
 
         //////////////////////// NEW ////////////////////////////////
-        GLES10.glNormalPointer(GLES10.GL_FLOAT, 0, normalBuffer);
+        if(normalBuffer != null) GLES10.glNormalPointer(GLES10.GL_FLOAT, 0, normalBuffer);
         //////////////////////// NEW ////////////////////////////////
 
-        if(textureEnabled) {
-            GLES10.glTexCoordPointer(2, GLES10.GL_FLOAT,0,texcoordBuffer);
-            GLES10.glBindTexture(GLES10.GL_TEXTURE_2D, textures[0]);
+        if (textureEnabled) {
+            GLES10.glEnable(GL10.GL_TEXTURE_2D);
+            // Enable the texture state
+            GLES10.glEnableClientState(GL10.GL_TEXTURE_COORD_ARRAY);
+
+            // Point to our buffers
+            GLES10.glTexCoordPointer(2, GLES10.GL_FLOAT, 0, texcoordBuffer);
+            GLES10.glBindTexture(GL10.GL_TEXTURE_2D, mTextureId);
         }
 
         GLES10.glDrawElements(GLES10.GL_TRIANGLES, numFaceIndexs, GLES10.GL_UNSIGNED_SHORT, indexBuffer);
 
         // Disable the vertices buffer.
         GLES10.glDisableClientState(GLES10.GL_VERTEX_ARRAY);
-        if(textureEnabled) GLES10.glDisableClientState(GLES10.GL_TEXTURE_COORD_ARRAY);
+        if(textureEnabled) {
+            GLES10.glDisable(GL10.GL_TEXTURE_2D);
+            GLES10.glDisableClientState(GLES10.GL_TEXTURE_COORD_ARRAY);
+        }
 
         //////////////////////// NEW ////////////////////////////////
         GLES10.glDisableClientState(GLES10.GL_NORMAL_ARRAY);

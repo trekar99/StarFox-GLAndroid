@@ -38,10 +38,10 @@ public class Mesh {
     private int mTextureId = -1; // New variable.
 
     // The bitmap we want to load as a texture.
-    private Bitmap mBitmap; // New variable.
+    private Bitmap mBitmap;
 
     // Indicates if we need to load the texture.
-    private boolean mShouldLoadTexture = false; // New variable.
+    private boolean mShouldLoadTexture = false;
 
     // The number of indices.
     private int mNumOfIndices = -1;
@@ -51,6 +51,9 @@ public class Mesh {
 
     // Smooth Colors
     private FloatBuffer mColorBuffer = null;
+
+    // Indicates if we need to make transparency.
+    private boolean mTransparency = false;
 
     // Translate params.
     public float x = 0;
@@ -69,10 +72,8 @@ public class Mesh {
     /**
      * Render the mesh.
      *
-     * @param gl
-     *            the OpenGL context to render to.
      */
-    public void draw(GL10 gl) {
+    public void draw() {
         // Enabled the vertices buffer for writing and to be used during rendering.
         GLES10.glEnableClientState(GLES10.GL_VERTEX_ARRAY);
         // Specifies the location and data format of an array of vertex coords to use when rendering.
@@ -89,7 +90,7 @@ public class Mesh {
         // Load textures
         if (mShouldLoadTexture) {
             loadGLTexture();
-            mShouldLoadTexture = false; // TODO
+            mShouldLoadTexture = false;
         }
 
         if (mTextureId != -1 && mTextureBuffer != null) {
@@ -107,14 +108,27 @@ public class Mesh {
         GLES10.glRotatef(ry, 0, 1, 0);
         GLES10.glRotatef(rz, 0, 0, 1);
 
+        if(mTransparency) {
+            GLES10.glEnable(GLES10.GL_BLEND);
+            GLES10.glBlendFunc(GLES10.GL_SRC_ALPHA, GLES10.GL_ONE_MINUS_SRC_ALPHA);
+        }
+
         // Point out the where the color buffer is.
         GLES10.glDrawElements(GLES10.GL_TRIANGLES, mNumOfIndices, GLES10.GL_UNSIGNED_SHORT, mIndicesBuffer);
         // Disable the vertices buffer.
         GLES10.glDisableClientState(GLES10.GL_VERTEX_ARRAY);
 
+        if(mTransparency) GLES10.glDisable(GLES10.GL_BLEND);
+
         // End loading textures
         if (mTextureId != -1 && mTextureBuffer != null) {
+            GLES10.glDisable(GL10.GL_TEXTURE_2D);
             GLES10.glDisableClientState(GLES10.GL_TEXTURE_COORD_ARRAY);
+        }
+
+        if (mColorBuffer != null) {
+            // Enable the color array buffer to be used during rendering.
+            GLES10.glDisableClientState(GL10.GL_COLOR_ARRAY);
         }
     }
 
@@ -154,7 +168,7 @@ public class Mesh {
      * @param blue
      * @param alpha
      */
-    protected void setColor(float red, float green, float blue, float alpha) {
+    public void setColor(float red, float green, float blue, float alpha) {
         mRGBA[0] = red;
         mRGBA[1] = green;
         mRGBA[2] = blue;
@@ -169,6 +183,12 @@ public class Mesh {
     protected void setColors(float[] colors) {
         mColorBuffer = GraphicUtils.ConvToFloatBuffer(colors);
     }
+
+    /**
+     * Activates transparency
+     *
+     */
+    public void enableTransparency() { this.mTransparency = true; }
 
     /**
      * Set the bitmap to load into a texture.

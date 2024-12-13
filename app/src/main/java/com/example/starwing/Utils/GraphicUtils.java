@@ -22,10 +22,22 @@ package com.example.starwing.Utils;
  *
  */
 
+import android.content.Context;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.graphics.Matrix;
+import android.opengl.GLUtils;
+
+import com.example.starwing.R;
+
+import java.io.IOException;
+import java.io.InputStream;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.FloatBuffer;
 import java.nio.ShortBuffer;
+
+import javax.microedition.khronos.opengles.GL10;
 
 public class GraphicUtils {
 
@@ -79,5 +91,26 @@ public class GraphicUtils {
         return ReturnBuffer;
     }
 
+    public static Bitmap loadBitmap(Context context, int resource){
+        // We need to flip the textures vertically:
+        Matrix flip = new Matrix();
+        flip.postScale(1f, -1f);
+
+        // Construct an input stream to texture image
+        InputStream istream = context.getResources().openRawResource(resource);
+
+        Bitmap bitmap;
+        try {
+            // Read and decode input as bitmap
+            bitmap = BitmapFactory.decodeStream(istream);
+            //bitmap = Bitmap.createBitmap(bitmap, 0, 0, bitmap.getWidth(), bitmap.getHeight(), flip, true);
+        } finally {
+            try {
+                istream.close();
+            } catch(IOException e) { }
+        }
+
+        return bitmap;
+    }
 }
 

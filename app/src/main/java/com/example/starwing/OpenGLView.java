@@ -14,8 +14,10 @@ import android.content.res.Resources;
 import android.opengl.GLSurfaceView;
 import android.opengl.GLSurfaceView.Renderer;
 import android.opengl.GLU;
+import android.view.GestureDetector;
 import android.view.MotionEvent;
 
+import com.example.starwing.Game.GestureListener;
 import com.example.starwing.Game.StarwingGame;
 import com.example.starwing.Utils.Logger;
 
@@ -23,12 +25,9 @@ public class OpenGLView extends GLSurfaceView implements Renderer {
 
 	StarwingGame Game;
 	Context context;
+	GestureDetector gestureDetector;
 
 	private int frameCount = 0;
-
-	float previousX, previousY;
-	float width = Resources.getSystem().getDisplayMetrics().widthPixels;
-    float height = Resources.getSystem().getDisplayMetrics().heightPixels;
 
 	public OpenGLView(Context context){
 		super(context);
@@ -37,6 +36,7 @@ public class OpenGLView extends GLSurfaceView implements Renderer {
 		setRenderer(this);
 		Game = new StarwingGame();
 		this.context = context;
+		gestureDetector = new GestureDetector(context, new GestureListener(Game));
 
 		Logger.v(this, "All set for View");
 	}
@@ -52,21 +52,7 @@ public class OpenGLView extends GLSurfaceView implements Renderer {
 	}
 
 	public boolean onTouchEvent(final MotionEvent event){
-		Logger.v(this, "Touch Event detected at (x , y) : " + event.getX() + event.getY());
-
-		if(event.getAction() == MotionEvent.ACTION_DOWN)
-		{
-			Logger.v(this, "Passing the touchevent to the renderer object");
-			Game.addTouchEvent(event.getX(),event.getY());
-			switch (event.getAction()) {
-				case MotionEvent.ACTION_DOWN:
-
-
-			}
-			return true;
-		}
-
-		return true;
+		return gestureDetector.onTouchEvent(event);
 	}
 
 	public void onSurfaceCreated(GL10 gl, EGLConfig config){
@@ -78,18 +64,6 @@ public class OpenGLView extends GLSurfaceView implements Renderer {
 	public void onSurfaceChanged(GL10 gl, int width, int height){
 		Logger.Debug(this, "Surface changed, Update the game screen");
 		Game.updateScreenSize(width, height);
-
-
-		gl.glViewport(0, 0, width, height);
-		// Select the projection matrix
-		gl.glMatrixMode(GL10.GL_PROJECTION);
-		// Reset the projection matrix
-		gl.glLoadIdentity();
-		// Calculate the aspect ratio of the window
-		GLU.gluPerspective(gl, 60.0f, (float) width / (float) height, 0.1f, 1000.0f);
-		//gl.glOrthof(8,10,-4,4,-1,1);
-		// Select the modelview matrix
-		gl.glMatrixMode(GL10.GL_MODELVIEW);
 	}
 
 	public int getFrameCount() { return frameCount; }

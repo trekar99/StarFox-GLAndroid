@@ -7,76 +7,53 @@
 package com.example.starwing.Utils;
 
 import android.opengl.GLES10;
+import android.opengl.GLU;
+
+import javax.microedition.khronos.opengles.GL10;
 
 public class Camera {
 
-    float _height, _width;
-    int _vp_x, _vp_y;
-    int _vp_h, _vp_w;
+    private final GL10 gl;
+    private int height, width;
+    private boolean firstPerson = true;
 
-    int _onScreen;
-
-    public Camera(int width, int height)
-    {
-        SetWidthHeight(width,height);
-        _vp_x = 0;
-        _vp_y = 0;
-        _vp_w = Float.floatToIntBits(_width);
-        _vp_h = Float.floatToIntBits(_height);
+    public Camera(GL10 gl, int width, int height){
+        setWidthHeight(width,height);
+        this.gl = gl;
     }
 
-    public void SetWidthHeight(int width, int height)
-    {
-        _height = Float.intBitsToFloat(height);
-        _width = Float.intBitsToFloat(width);
+    public void setWidthHeight(int width, int height){
+        this.width = width;
+        this.height = height;
     }
 
-    public void rasonly()
-    {
+    public void changeView() { this.firstPerson = !this.firstPerson; }
+
+    public void setOrtographic(){
         GLES10.glMatrixMode(GLES10.GL_PROJECTION);
         GLES10.glLoadIdentity();
-        GLES10.glOrthof(0.0f, (float)_vp_w, 0.0f, (float)_vp_h, 0.0f, 1.0f);
+        GLES10.glOrthof(-5,5,-4,4,-5,5);
         GLES10.glMatrixMode(GLES10.GL_MODELVIEW);
         GLES10.glLoadIdentity();
-        GLES10.glViewport(0, 0, _vp_w, _vp_h);
     }
 
-    public void doPerspective(float GridSize)
-    {
-        int w,h;
+    public void setPerspective(){
+        gl.glMatrixMode(GL10.GL_PROJECTION); // Select projection matrix
+        gl.glLoadIdentity();                 // Reset projection matrix
 
+        // Use perspective projection
+        if(firstPerson) GLU.gluPerspective(gl, 60, (float) width / height, 0.1f, 100.f);
+        else {
+            GLU.gluPerspective(gl, 100, (float) width / height, 0.1f, 100.f);
+            GLU.gluLookAt(gl, 0, 5, 0, 0, 0, -6, 0, 1, 0);
+        }
 
-        float top;
-        float left;
-        float ratio = _width / _height;
-        //float znear = 0.5f;
-        float znear = 1.0f;
-        float zfar = (float)(GridSize * 6.5f);
-        //float fov = 120.0f;
-        float fov = 105.0f;
-
-        GLES10.glMatrixMode(GLES10.GL_PROJECTION);
-        GLES10.glLoadIdentity();
-        top = (float)Math.tan(fov * Math.PI / 360.0f) * (float)znear;
-        left = (float)(((float)-top)*((float)ratio));
-        GLES10.glFrustumf(left, -left, -top,  top, znear, zfar);
-
-        w = Float.floatToIntBits(_width);
-        h = Float.floatToIntBits(_height);
-        GLES10.glViewport(0, 0, w, h);
+        gl.glMatrixMode(GL10.GL_MODELVIEW);  // Select model-view matrix
+        gl.glLoadIdentity();
 
 
     }
 
-    public int GetWidth()
-    {
-        return Float.floatToIntBits(_width);
-    }
-
-    public int GetHeight()
-    {
-        return Float.floatToIntBits(_height);
-    }
 
 }
 
