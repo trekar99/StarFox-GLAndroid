@@ -164,8 +164,7 @@ public class StarwingGame {
         GLES10.glRotatef(180f, 0,1,0);
         if(frameCount % 100 == 0) r = (random.nextFloat() - 0.5f) * 100f ;
         z = - (float) frameCount % 100 ;
-        GLES10.glTranslatef(r, z/2f + 10, z);
-        GLES10.glTranslatef(0, (float) -velocity /25, (float) velocity /10);
+        GLES10.glTranslatef(r, z/2f + 10, z );
 
         coin.draw();
         GLES10.glPopMatrix();
@@ -187,8 +186,6 @@ public class StarwingGame {
         GLES10.glPopMatrix();
         gl.glDisable(GL10.GL_LIGHTING);
         gl.glDisable(GL10.GL_NORMALIZE);
-
-
 
         // HUD
         camera.setOrtographic();

@@ -26,9 +26,6 @@ import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Matrix;
-import android.opengl.GLUtils;
-
-import com.example.starwing.R;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -45,8 +42,16 @@ public class GraphicUtils {
         public float v[] = new float[2];
     }
 
-    public class vec3 {
-        public float v[] = new float[3];
+    public static class vec3 {
+        public float x, y, z;
+
+        public vec3(float x, float y, float z) {
+            this.x = x;
+            this.y = y;
+            this.z = z;
+        }
+
+        // ... otros métodos útiles como suma, resta, multiplicación, etc.
     }
 
     public class vec4 {

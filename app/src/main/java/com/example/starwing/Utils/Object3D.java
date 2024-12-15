@@ -51,8 +51,12 @@ public class Object3D {
 
     int numFaceIndexs = 0;
 
+    // Bounding Box
+    public BoundingBox boundingBox;
+
     public Object3D(Context ctx, int filenameId) {
 
+        boundingBox = new BoundingBox();
         try {
             String line;
             String[] tmp,ftmp;
@@ -70,8 +74,15 @@ public class Object3D {
                 tmp = line.split(" ");
                 if (tmp[0].equalsIgnoreCase("v")) {
 
+                    GraphicUtils.vec3 vec = new GraphicUtils.vec3(
+                            Float.parseFloat(tmp[1]),
+                            Float.parseFloat(tmp[2]),
+                            Float.parseFloat(tmp[3]));
+                    boundingBox.update(vec);
+                    System.out.println(vec.x + " " + vec.y + " " + vec.z);
                     for (int i = 1; i < 4; i++) {
                         vlist.add( Float.parseFloat(tmp[i]) );
+
                     }
 
                 }
