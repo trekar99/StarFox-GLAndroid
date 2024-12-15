@@ -44,7 +44,7 @@ public class Object3D {
     // Our texture buffer.
     private FloatBuffer texcoordBuffer;
 
-    int[] textures;
+    private boolean fanEnabled = false;
 
     // Our texture id.
     private int mTextureId = -1; // New variable.
@@ -200,6 +200,8 @@ public class Object3D {
         textureEnabled = true;
     }
 
+    public void enableFan() { fanEnabled = true; }
+
     public void draw() {
         // Enabled the vertices buffer for writing and to be used during
         // rendering.
@@ -234,7 +236,8 @@ public class Object3D {
             GLES10.glBindTexture(GL10.GL_TEXTURE_2D, mTextureId);
         }
 
-        GLES10.glDrawElements(GLES10.GL_TRIANGLES, numFaceIndexs, GLES10.GL_UNSIGNED_SHORT, indexBuffer);
+        if(fanEnabled) GLES10.glDrawElements(GLES10.GL_TRIANGLE_FAN, numFaceIndexs, GLES10.GL_UNSIGNED_SHORT, indexBuffer);
+        else GLES10.glDrawElements(GLES10.GL_TRIANGLES, numFaceIndexs, GLES10.GL_UNSIGNED_SHORT, indexBuffer);
 
         // Disable the vertices buffer.
         GLES10.glDisableClientState(GLES10.GL_VERTEX_ARRAY);

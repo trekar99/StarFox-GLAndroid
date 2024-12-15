@@ -7,6 +7,11 @@
 package com.example.starwing;
 
 import android.app.Activity;
+import android.content.Context;
+import android.hardware.Sensor;
+import android.hardware.SensorEvent;
+import android.hardware.SensorEventListener;
+import android.hardware.SensorManager;
 import android.opengl.GLSurfaceView;
 import android.os.Bundle;
 import android.view.View;
@@ -15,10 +20,13 @@ import android.view.WindowManager;
 import com.example.starwing.Utils.Logger;
 
 public class StarWing extends Activity {
-    private GLSurfaceView view;
+    private OpenGLView view;
 
     private Boolean _FocusChangeFalseSeen = false;
     private Boolean _Resume = false;
+
+    private SensorManager sensorManager;
+    private Sensor sensor;
 
     /** Called when the activity is first created. */
     @Override
@@ -33,8 +41,25 @@ public class StarWing extends Activity {
         view = new OpenGLView(this);
         setContentView(view);
 
+        sensorManager = (SensorManager) getSystemService(Context.SENSOR_SERVICE);
+        sensor = sensorManager.getDefaultSensor(Sensor.TYPE_GYROSCOPE);
+        sensorManager.registerListener(gyroListener, sensor, SensorManager.SENSOR_DELAY_NORMAL);
+
         Logger.v(this,"onCreate function ended");
     }
+
+    public SensorEventListener gyroListener = new SensorEventListener() {
+        public void onAccuracyChanged(Sensor sensor, int acc) {
+        }
+
+        public void onSensorChanged(SensorEvent event) {
+            float x = event.values[0];
+            float y = event.values[1];
+            float z = event.values[2];
+
+            view.setDeviceRotation(x/5, y/20, -z/20);
+        }
+    };
 
     private void setImmersiveMode(){
         Logger.v(this, "Starting the setImmersiveMode()");

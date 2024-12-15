@@ -35,9 +35,9 @@ public class GestureListener extends GestureDetector.SimpleOnGestureListener {
         Logger.v("Long Press", "LONG PRESS: (" + x + "," + y + ")");
     }
 
-    @Override
-    public boolean onScroll(MotionEvent e1, MotionEvent e2, float distanceX, float distanceY) {
-        Game.addTouchEvent(distanceX, distanceY);
-        return true;
-    }
+//    @Override
+//    public boolean onScroll(MotionEvent e1, MotionEvent e2, float distanceX, float distanceY) {
+//        Game.addTouchEvent(distanceX, distanceY);
+//        return true;
+//    }
 }
